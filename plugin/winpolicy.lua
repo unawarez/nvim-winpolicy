@@ -77,3 +77,28 @@ autocmd("VimResized", { callback = tick })
 -- autocmds don't fire on startup:
 vim.schedule(tick) -- lack of schedule => main window is in a weird state and
 -- random options will appear broken.
+
+-- if pad window is only window, then quit. *extremely annoying* without this.
+-- vim doc says QuitPre or "kinda maybe ExitPre" (paraphrased) is exactly for
+-- this usecase.
+autocmd("QuitPre", {
+    callback = function()
+        if leftpad_winid == nil then return end
+        -- list_wins() will also include the win that's in the process of
+        -- quitting...and these are ordered lists and every simple data thing
+        -- in lua is obnoxious.
+        local wids = vim.api.nvim_list_wins()
+        -- can only check # entries while it's an ordered list.
+        if #wids == 2 then
+            -- ASSuming the second entry is the currently quitting window id.
+            local dumb = false
+            for _, v in ipairs(wids) do
+                dumb = dumb or v == leftpad_winid
+            end
+            if dumb then
+                vim.api.nvim_win_close(leftpad_winid, true)
+                leftpad_winid = nil
+            end
+        end
+    end
+})
