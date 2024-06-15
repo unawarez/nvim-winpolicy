@@ -11,7 +11,8 @@ end
 
 local left_pad_config_default = {
     buffer = vim.api.nvim_create_buf(false, true),
-    focusable = false,
+    focusable = false, -- seems to do nothing
+    minimum = 12,
     opts = {
         -- wrap = false,
         winfixwidth = true,
@@ -66,6 +67,7 @@ local PLEASANT_WIDTH = 80
 local tick = function()
     local screen_width = vim.o.columns
     local leftpad_width = math.floor((screen_width - PLEASANT_WIDTH) / 2)
+    if leftpad_width < left_pad_config_default.minimum then leftpad_width = nil end
     local ok, err = pcall(leftpad_set_width, leftpad_width)
     if not ok then
         -- without the schedule, error during window resize => rendering explodes.
